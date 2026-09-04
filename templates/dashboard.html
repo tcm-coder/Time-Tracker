@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Time Tracker{% endblock %}
+{% block content %}
+<div class="panel-header">
+  <h2>Dashboard</h2>
+  <button id="new-job-toggle" class="btn btn-primary" type="button">+ New Job</button>
+</div>
+
+<form id="new-job-form" method="post" action="{{ url_for('active_jobs.new_job') }}" class="new-job-form hidden">
+  <input type="text" name="job_number" placeholder="Job / Ticket number (optional)">
+  <input type="text" name="customer_name" placeholder="Customer name (optional)">
+  <input type="text" name="summary" placeholder="Summary (optional)">
+  {% set editor_id = "description-editor-new" %}
+  {% set hidden_id = "description-hidden-new" %}
+  {% set initial_html = "" %}
+  {% include "_description_editor.html" %}
+  <button type="submit" class="btn btn-primary">Create &amp; Start Timer</button>
+</form>
+
+<form method="get" action="{{ url_for('dashboard.search') }}" class="search-form">
+  <input type="text" name="q" placeholder="Search job #, customer, summary or notes...">
+  <select name="scope">
+    <option value="all">All jobs</option>
+    <option value="open">Active jobs</option>
+    <option value="resolved">Resolved jobs</option>
+  </select>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<div class="stat-grid">
+  <div class="stat-card"><span class="stat-value">{{ "%.1f"|format(stats.hours_today) }}h</span><span class="stat-label">Today</span></div>
+  <div class="stat-card"><span class="stat-value">{{ "%.1f"|format(stats.hours_week) }}h</span><span class="stat-label">This week</span></div>
+  <a href="{{ url_for('active_jobs.index') }}" class="stat-card stat-card-link"><span class="stat-value">{{ stats.open_count }}</span><span class="stat-label">Open jobs</span></a>
+  <a href="{{ url_for('resolved_jobs.index') }}" class="stat-card stat-card-link"><span class="stat-value">{{ stats.resolved_count }}</span><span class="stat-label">Resolved jobs</span></a>
+</div>
+
+<section class="card">
+  <h3>⏱️ Currently running</h3>
+  {% if stats.running_job %}
+    <div class="dash-row">
+      <a href="{{ url_for('active_jobs.detail', job_id=stats.running_job.id) }}">{% if stats.running_job.job_number %}{{ stats.running_job.job_number }} &mdash; {% endif %}{{ stats.running_job.customer_name or "(no customer name)" }}</a>
+      <span class="timer running" data-base-seconds="{{ running_base_seconds }}" data-start-ts="{{ running_start_ts }}">--:--:--</span>
+      <form method="post" action="{{ url_for('active_jobs.stop', job_id=stats.running_job.id) }}" class="inline-form">
+        <input type="hidden" name="next" value="{{ url_for('dashboard.index') }}">
+        <button class="btn btn-small">Stop</button>
+      </form>
+    </div>
+  {% else %}
+    <p class="empty">No timer currently running.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h3>🎯 Needs attention</h3>
+  {% if stats.oldest_job %}
+    <div class="dash-row">
+      <a href="{{ url_for('active_jobs.detail', job_id=stats.oldest_job.id) }}">{% if stats.oldest_job.job_number %}{{ stats.oldest_job.job_number }} &mdash; {% endif %}{{ stats.oldest_job.customer_name or "(no customer name)" }}</a>
+      <span class="dash-hint">has gone the longest without activity</span>
+      {% if oldest_running %}
+        <span class="timer running" data-base-seconds="{{ oldest_base_seconds }}" data-start-ts="{{ oldest_start_ts }}">--:--:--</span>
+        <form method="post" action="{{ url_for('active_jobs.stop', job_id=stats.oldest_job.id) }}" class="inline-form">
+          <input type="hidden" name="next" value="{{ url_for('dashboard.index') }}">
+          <button class="btn btn-small">Stop</button>
+        </form>
+      {% else %}
+        <span class="timer">{{ oldest_duration_seconds | fmtdur }}</span>
+        <form method="post" action="{{ url_for('active_jobs.start', job_id=stats.oldest_job.id) }}" class="inline-form">
+          <input type="hidden" name="next" value="{{ url_for('dashboard.index') }}">
+          <button class="btn btn-small">Start</button>
+        </form>
+      {% endif %}
+    </div>
+  {% else %}
+    <p class="empty">No open jobs.</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('new-job-toggle').addEventListener('click', function () {
+    document.getElementById('new-job-form').classList.toggle('hidden');
+    initDescriptionEditor('description-editor-new', 'description-hidden-new');
+  });
+</script>
+{% endblock %}

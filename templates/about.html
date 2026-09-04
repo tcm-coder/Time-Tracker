@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}About - Time Tracker{% endblock %}
+{% block content %}
+<section class="about-hero card">
+  <h2 class="about-hero-title">Time Tracker</h2>
+  <p class="about-hero-tagline">A fast, local-first job and time tracking tool.</p>
+</section>
+
+<section class="card">
+  <h3>What it does</h3>
+  <div class="feature-grid">
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">⏱️</span>
+      <div>
+        <strong>Job timers</strong>
+        <p>Start, stop, and resume a single running timer per job, or add time manually after the fact.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">📝</span>
+      <div>
+        <strong>Rich-text descriptions &amp; notes</strong>
+        <p>Formatted text and tables, with direct paste support from Excel and Word.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">🔍</span>
+      <div>
+        <strong>Search</strong>
+        <p>Find any job instantly by number, customer, summary, or note content.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">🕒</span>
+      <div>
+        <strong>Day clock</strong>
+        <p>Clock in, pause for lunch, and clock out, independent of job timers, with automatic end-of-day cutoff.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">📅</span>
+      <div>
+        <strong>Weekly timesheet</strong>
+        <p>A Mon&ndash;Sun grid of hours per job, with CSV export.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">📊</span>
+      <div>
+        <strong>Dashboard</strong>
+        <p>Today's and this week's hours at a glance, plus a reminder for whichever job has gone longest without attention.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">🎯</span>
+      <div>
+        <strong>Staleness indicator</strong>
+        <p>A color-coded dot shows how long it's been since a job last had activity.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon" aria-hidden="true">📋</span>
+      <div>
+        <strong>Copy details</strong>
+        <p>One click to copy a job's full details to your clipboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card about-support">
+  <h3>Support this project</h3>
+  <p>Time Tracker is built and maintained by Think Clarity. If it's useful to you, consider supporting its development.</p>
+  <a class="btn btn-donate" href="https://ko-fi.com/thinkclarity" target="_blank" rel="noopener noreferrer">☕ Support on Ko-fi</a>
+</section>
+
+<section class="card">
+  <p class="build-info">Built by {{ author }} &middot; v{{ app_version }} &middot; {{ build_date }} &middot; {{ build_id[:8] }}</p>
+</section>
+{% endblock %}

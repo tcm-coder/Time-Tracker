@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Active Jobs - Time Tracker{% endblock %}
+{% block content %}
+<div class="panel-header">
+  <h2>Active Jobs</h2>
+  <button id="new-job-toggle" class="btn btn-primary" type="button">+ New Job</button>
+</div>
+
+<form id="new-job-form" method="post" action="{{ url_for('active_jobs.new_job') }}" class="new-job-form hidden">
+  <input type="text" name="job_number" placeholder="Job / Ticket number (optional)">
+  <input type="text" name="customer_name" placeholder="Customer name (optional)">
+  <input type="text" name="summary" placeholder="Summary (optional)">
+  {% set editor_id = "description-editor-new" %}
+  {% set hidden_id = "description-hidden-new" %}
+  {% set initial_html = "" %}
+  {% include "_description_editor.html" %}
+  <button type="submit" class="btn btn-primary">Create &amp; Start Timer</button>
+</form>
+
+{% if not rows %}
+  <p class="empty">No active jobs. Click "+ New Job" to start one.</p>
+{% else %}
+<div class="grid-scroll">
+<table class="job-table">
+  <thead>
+    <tr><th></th><th>Job #</th><th>Customer</th><th>Summary</th><th>Time</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr class="row-link" data-href="{{ url_for('active_jobs.detail', job_id=row.job.id) }}">
+      <td><span class="dot dot-{{ row.color }}" title="last activity: {{ row.color }}"></span></td>
+      <td><a href="{{ url_for('active_jobs.detail', job_id=row.job.id) }}">{{ row.job.job_number or "—" }}</a></td>
+      <td>{{ row.job.customer_name }}</td>
+      <td class="summary-cell">{{ row.job.summary }}</td>
+      <td>
+        {% if row.running %}
+          <span class="timer running" data-base-seconds="{{ row.base_seconds }}" data-start-ts="{{ row.start_ts }}">--:--:--</span>
+        {% else %}
+          <span class="timer">{{ row.duration_seconds | fmtdur }}</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if row.running %}
+        <form method="post" action="{{ url_for('active_jobs.stop', job_id=row.job.id) }}"><button class="btn btn-small">Stop</button></form>
+        {% else %}
+        <form method="post" action="{{ url_for('active_jobs.start', job_id=row.job.id) }}"><button class="btn btn-small">Resume</button></form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('new-job-toggle').addEventListener('click', function () {
+    document.getElementById('new-job-form').classList.toggle('hidden');
+    initDescriptionEditor('description-editor-new', 'description-hidden-new');
+  });
+</script>
+{% endblock %}

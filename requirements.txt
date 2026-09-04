@@ -1,0 +1,4 @@
+flask==3.0.3
+waitress==3.0.0
+zeroconf==0.150.0
+bleach[css]==6.3.0

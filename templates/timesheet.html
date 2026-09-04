@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Timesheet - Time Tracker{% endblock %}
+{% block content %}
+<div class="panel-header">
+  <h2>Timesheet</h2>
+  <a class="btn btn-primary" href="{{ url_for('timesheet.export_csv', start_date=week_start.isoformat(), end_date=week_end.isoformat()) }}">Export week to CSV</a>
+</div>
+
+<div class="week-nav">
+  <a class="btn btn-small" href="{{ url_for('timesheet.index', week=prev_week) }}">&larr; Previous week</a>
+  <span class="week-label">{{ week_start.strftime('%b %d') }} &ndash; {{ week_end.strftime('%b %d, %Y') }}</span>
+  <a class="btn btn-small" href="{{ url_for('timesheet.index') }}">This week</a>
+  <a class="btn btn-small" href="{{ url_for('timesheet.index', week=next_week) }}">Next week &rarr;</a>
+</div>
+
+<div class="legend">
+  <span class="status-tag status-tag-open">Active</span>
+  <span class="status-tag status-tag-resolved">Resolved</span>
+</div>
+
+{% if not grid.rows %}
+  <p class="empty">No time logged this week.</p>
+{% else %}
+<div class="grid-scroll">
+<table class="timesheet-grid">
+  <thead>
+    <tr>
+      <th class="job-col">Job</th>
+      {% for d in grid.days %}
+      {% set info = clock_summary[d.isoformat()] %}
+      <th class="{{ 'today-col' if d == today else '' }}">
+        {{ d.strftime('%a') }}<br><span class="day-date">{{ d.strftime('%b %d') }}</span>
+        {% if info %}
+        <a class="clock-header-info" href="{{ url_for('timesheet.clock_day', iso_date=d.isoformat()) }}">
+          <span class="clock-header-line">Started {{ info.start_ts | fmttime }}</span>
+          {% if info.status == 'closed' %}
+            <span class="clock-header-line">Ended {{ info.end_ts | fmttime }}</span>
+          {% elif info.status == 'in_progress' %}
+            <span class="clock-header-line clock-open">still clocked in</span>
+          {% else %}
+            <span class="clock-header-line clock-open">no end recorded</span>
+          {% endif %}
+        </a>
+        {% endif %}
+      </th>
+      {% endfor %}
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in grid.rows %}
+    <tr class="status-row-{{ row.status }}">
+      <td class="job-col">
+        <span class="status-tag status-tag-{{ row.status }}">{{ 'Active' if row.status == 'open' else 'Resolved' }}</span>
+        <a href="{{ url_for('active_jobs.detail', job_id=row.job_id) }}">{{ row.job_number }}</a>
+        <div class="summary-cell">{{ row.customer_name }}</div>
+      </td>
+      {% for d in grid.days %}
+      {% set secs = row.day_seconds[d.isoformat()] %}
+      <td class="{{ 'today-col' if d == today else '' }}">
+        {% if secs > 0 %}{{ secs | fmtdur }}{% endif %}
+        {% if row.resolved_at and row.resolved_at[:10] == d.isoformat() %}<span class="resolved-marker" title="Resolved this day">&check;</span>{% endif %}
+      </td>
+      {% endfor %}
+      <td class="total-col">{{ row.total_seconds | fmtdur }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <td class="job-col">Daily total</td>
+      {% for d in grid.days %}
+      <td class="{{ 'today-col' if d == today else '' }}">{{ grid.day_totals[d.isoformat()] | fmtdur }}</td>
+      {% endfor %}
+      <td class="total-col">{{ grid.week_total | fmtdur }}</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+{% endif %}
+{% endblock %}

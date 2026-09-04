@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Search - Time Tracker{% endblock %}
+{% block content %}
+<h2>Search</h2>
+
+<form method="get" action="{{ url_for('dashboard.search') }}" class="search-form">
+  <input type="text" name="q" placeholder="Search job #, customer, summary or notes..." value="{{ q }}" autofocus>
+  <select name="scope">
+    <option value="all" {{ "selected" if scope == "all" else "" }}>All jobs</option>
+    <option value="open" {{ "selected" if scope == "open" else "" }}>Active jobs</option>
+    <option value="resolved" {{ "selected" if scope == "resolved" else "" }}>Resolved jobs</option>
+  </select>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+{% if not q %}
+  <p class="empty">Enter a search term to find jobs by number, customer, summary or note text.</p>
+{% elif not results %}
+  <p class="empty">No jobs found matching &ldquo;{{ q }}&rdquo;.</p>
+{% else %}
+<div class="grid-scroll">
+<table class="job-table">
+  <thead>
+    <tr><th>Job #</th><th>Customer</th><th>Summary</th><th>Status</th><th>Total time</th></tr>
+  </thead>
+  <tbody>
+    {% for row in results %}
+    <tr class="row-link" data-href="{{ url_for('active_jobs.detail', job_id=row.job.id) }}">
+      <td><a href="{{ url_for('active_jobs.detail', job_id=row.job.id) }}">{{ row.job.job_number or "—" }}</a></td>
+      <td>{{ row.job.customer_name }}</td>
+      <td class="summary-cell">
+        {{ row.job.summary }}
+        {% if row.matched_note %}
+          <div class="note-match">Note match: &ldquo;{{ row.matched_note.text }}&rdquo;</div>
+        {% endif %}
+      </td>
+      <td><span class="status-tag status-tag-{{ row.job.status }}">{{ row.job.status }}</span></td>
+      <td>{{ row.duration_seconds | fmtdur }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}

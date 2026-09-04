@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Resolved Jobs - Time Tracker{% endblock %}
+{% block content %}
+<h2>Resolved Jobs</h2>
+{% if not rows %}
+  <p class="empty">No resolved jobs yet.</p>
+{% else %}
+<div class="grid-scroll">
+<table class="job-table">
+  <thead><tr><th>Job #</th><th>Customer</th><th>Summary</th><th>Total time</th><th>Resolved</th><th></th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr class="row-link" data-href="{{ url_for('active_jobs.detail', job_id=row.job.id) }}">
+      <td><a href="{{ url_for('active_jobs.detail', job_id=row.job.id) }}">{{ row.job.job_number or "—" }}</a></td>
+      <td>{{ row.job.customer_name }}</td>
+      <td class="summary-cell">{{ row.job.summary }}</td>
+      <td>{{ row.duration_seconds | fmtdur }}</td>
+      <td>{{ row.job.resolved_at | fmtts }}</td>
+      <td>
+        <form method="post" action="{{ url_for('resolved_jobs.reopen', job_id=row.job.id) }}">
+          <button class="btn btn-small">Reopen</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}

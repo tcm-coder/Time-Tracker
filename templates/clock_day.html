@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Clock segments - {{ day.strftime('%b %d, %Y') }} - Time Tracker{% endblock %}
+{% block content %}
+<a href="{{ url_for('timesheet.index', week=week_start) }}" class="back-link">&larr; Back to Timesheet</a>
+
+<div class="panel-header">
+  <h2>Clock segments &mdash; {{ day.strftime('%A, %b %d, %Y') }}</h2>
+</div>
+
+<div class="week-nav">
+  <a class="btn btn-small" href="{{ url_for('timesheet.clock_day', iso_date=prev_day) }}">&larr; Previous day</a>
+  <a class="btn btn-small" href="{{ url_for('timesheet.clock_day', iso_date=next_day) }}">Next day &rarr;</a>
+</div>
+
+<section class="card">
+  {% if not rows %}
+    <p class="empty">No clock segments recorded for this day.</p>
+  {% else %}
+  <div class="grid-scroll">
+  <table class="segment-table">
+    <thead><tr><th>Start</th><th>End</th><th>Duration</th><th></th></tr></thead>
+    <tbody>
+      {% for s in rows %}
+      <tr>
+        <td>
+          <form id="segform-{{ s.row.id }}" method="post"
+                action="{{ url_for('timesheet.update_clock_segment', segment_id=s.row.id) }}">
+            <input type="time" name="start_time" value="{{ s.row.start_ts | fmttime24 }}" required>
+          </form>
+        </td>
+        <td>
+          <input type="time" name="end_time" form="segform-{{ s.row.id }}"
+                 value="{{ s.row.end_ts | fmttime24 if s.row.end_ts else '' }}">
+        </td>
+        <td>{{ s.duration | fmtdur if s.duration is not none else 'running' }}</td>
+        <td>
+          <div class="segment-actions">
+            <button type="submit" form="segform-{{ s.row.id }}" class="btn btn-small">Save</button>
+            <form method="post" action="{{ url_for('timesheet.delete_clock_segment', segment_id=s.row.id) }}"
+                  onsubmit="return confirm('Delete this clock segment?');" class="inline-form">
+              <button type="submit" class="btn btn-small btn-danger">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h3>Add segment</h3>
+  <form method="post" action="{{ url_for('timesheet.add_clock_segment', iso_date=day.isoformat()) }}" class="manual-time-form">
+    <label>Start <input type="time" name="start_time" required></label>
+    <label>End <input type="time" name="end_time"></label>
+    <button type="submit" class="btn btn-primary">Add segment</button>
+  </form>
+</section>
+{% endblock %}

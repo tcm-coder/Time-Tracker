@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}{{ job.job_number or job.customer_name or "Job" }} - Time Tracker{% endblock %}
+{% block content %}
+<a href="{{ url_for('active_jobs.index') if job.status == 'open' else url_for('resolved_jobs.index') }}" class="back-link">&larr; Back</a>
+
+<div class="job-detail-header">
+  {% if color %}<span class="dot dot-{{ color }}"></span>{% endif %}
+  <h2>{% if job.job_number %}{{ job.job_number }} &mdash; {% endif %}{{ job.customer_name or "(no customer name)" }}</h2>
+  <span class="status-badge status-{{ job.status }}">{{ job.status }}</span>
+  <button type="button" id="copy-job-btn" class="btn btn-small" data-copy-text="{{ copy_text }}">Copy details</button>
+</div>
+
+<div class="timer-display">
+  {% if running %}
+    <span class="timer timer-large running" data-base-seconds="{{ base_seconds }}" data-start-ts="{{ start_ts }}">--:--:--</span>
+    <form method="post" action="{{ url_for('active_jobs.stop', job_id=job.id) }}"><button class="btn">Stop</button></form>
+  {% else %}
+    <span class="timer timer-large">{{ duration_seconds | fmtdur }}</span>
+    {% if job.status == 'open' %}
+    <form method="post" action="{{ url_for('active_jobs.start', job_id=job.id) }}"><button class="btn btn-primary">Resume</button></form>
+    {% endif %}
+  {% endif %}
+
+  {% if job.status == 'open' %}
+  <form method="post" action="{{ url_for('active_jobs.resolve', job_id=job.id) }}" onsubmit="return confirm('Mark this job as resolved?');">
+    <button class="btn btn-success">Resolve</button>
+  </form>
+  {% else %}
+  <form method="post" action="{{ url_for('resolved_jobs.reopen', job_id=job.id) }}">
+    <button class="btn">Reopen</button>
+  </form>
+  {% endif %}
+</div>
+
+<section class="card">
+  <h3>Job details</h3>
+  <form method="post" action="{{ url_for('active_jobs.update', job_id=job.id) }}" class="job-fields-form">
+    <label>Job / Ticket number<input type="text" name="job_number" value="{{ job.job_number }}"></label>
+    <label>Customer name<input type="text" name="customer_name" value="{{ job.customer_name }}"></label>
+    <label>Summary<textarea name="summary">{{ job.summary }}</textarea></label>
+    <label>Description <span class="field-hint">(requirements)</span></label>
+    {% set editor_id = "description-editor-edit" %}
+    {% set hidden_id = "description-hidden-edit" %}
+    {% set initial_html = job.description %}
+    {% include "_description_editor.html" %}
+    <button type="submit" class="btn">Save changes</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Add time manually</h3>
+  <form method="post" action="{{ url_for('active_jobs.manual_time', job_id=job.id) }}" class="manual-time-form">
+    <label>Hours <input type="number" name="hours" min="0" value="0"></label>
+    <label>Minutes <input type="number" name="minutes" min="0" max="59" value="0"></label>
+    <button type="submit" class="btn">Add time</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Notes</h3>
+  <form method="post" action="{{ url_for('active_jobs.note', job_id=job.id) }}" class="note-form">
+    <textarea name="text" placeholder="Add a note..." required></textarea>
+    <button type="submit" class="btn">Add note</button>
+  </form>
+  {% if not notes %}
+    <p class="empty">No notes yet.</p>
+  {% else %}
+  <ul class="notes-list">
+    {% for n in notes %}
+    <li>
+      <div class="note-header">
+        <span class="note-ts">{{ n.created_at | fmtts }}</span>
+        <form method="post" action="{{ url_for('active_jobs.delete_note', job_id=job.id, note_id=n.id) }}"
+              onsubmit="return confirm('Delete this note?');" class="note-delete-form">
+          <button type="submit" class="btn btn-small btn-danger">Delete</button>
+        </form>
+      </div>
+      <p>{{ n.text }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h3>Time log</h3>
+  {% if not segments %}
+    <p class="empty">No time logged yet.</p>
+  {% else %}
+  <div class="grid-scroll">
+  <table class="segment-table">
+    <thead><tr><th>Start</th><th>End</th><th>Duration</th><th>Source</th></tr></thead>
+    <tbody>
+      {% for s in segments %}
+      <tr>
+        <td>{{ s.row.start_ts | fmtts }}</td>
+        <td>{{ s.row.end_ts | fmtts if s.row.end_ts else 'running' }}</td>
+        <td>{{ s.duration | fmtdur if s.duration is not none else '—' }}</td>
+        <td>{{ s.row.source }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</section>
+
+<section class="card danger-zone">
+  <h3>Danger zone</h3>
+  <form method="post" action="{{ url_for('active_jobs.delete', job_id=job.id) }}"
+        onsubmit="return confirm('Delete this job and all its logged time? This can\'t be undone.');">
+    <button type="submit" class="btn btn-danger">Delete Job</button>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    initDescriptionEditor('description-editor-edit', 'description-hidden-edit');
+  });
+</script>
+{% endblock %}

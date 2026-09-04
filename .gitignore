@@ -1,0 +1,11 @@
+# Database (contains personal data -- never committed)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.claude/
