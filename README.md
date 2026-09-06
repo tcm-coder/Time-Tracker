@@ -30,7 +30,7 @@ AI handled implementation.
 ### As a server
 
 ```bash
-git clone https://github.com/yourusername/time-tracker.git
+git clone https://github.com/tcm-coder/time-tracker.git
 cd time-tracker
 python3 -m venv .venv
 source .venv/bin/activate
@@ -45,6 +45,28 @@ elsewhere (recommended for server deployments), set:
 
 ```bash
 export TIMETRACKER_DB_DIR=/path/to/data-directory
+```
+
+
+### Running persistently (Linux/systemd)
+
+A sample service file is included at `deploy/timetracker.service`. Adjust
+the paths inside it to match where you cloned the repo, then:
+
+```bash
+sudo cp deploy/timetracker.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now timetracker
+```
+
+Set `IS_SERVER=1` (already included in the sample service file) to hide
+the desktop-only Quit button and disable its route.
+
+**Note on timezone:** fresh Linux installations often default to UTC. If
+timestamps look wrong, set your server's timezone before running:
+
+```bash
+sudo timedatectl set-timezone Your/Timezone
 ```
 
 ### As a desktop app
