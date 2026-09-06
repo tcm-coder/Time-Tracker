@@ -1,0 +1,28 @@
+# Time Tracker - systemd service file
+#
+# Setup:
+#   1. Adjust the paths below to match where you cloned this repo
+#      (WorkingDirectory, ExecStart, and TIMETRACKER_DB_DIR)
+#   2. Copy this file: sudo cp deploy/timetracker.service /etc/systemd/system/
+#   3. Reload systemd: sudo systemctl daemon-reload
+#   4. Enable and start: sudo systemctl enable --now timetracker
+#
+# Note: this example runs as root for simplicity on a personal server.
+# For a shared/multi-user machine, consider creating a dedicated user
+# instead and adjusting the "User=" line accordingly.
+
+[Unit]
+Description=Time Tracker App
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/timetracker
+Environment="IS_SERVER=1"
+Environment="TIMETRACKER_DB_DIR=/root/timetracker-data"
+ExecStart=/root/timetracker/.venv/bin/python3 /root/timetracker/app.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
