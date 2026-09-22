@@ -2,7 +2,7 @@
 
 A fast, local-first job and time tracking tool.
 
-Built by [ApnaFilter](https://ko-fi.com/fpnafilter) — designed and
+Built by [ApnaFilter](https://ko-fi.com/apnafilter) — designed and
 developed with AI-assisted development (Claude Code). I made the product
 and architecture decisions, diagnosed and fixed bugs, and did the QA; the
 AI handled implementation.
