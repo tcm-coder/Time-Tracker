@@ -2,7 +2,7 @@
 
 A fast, local-first job and time tracking tool.
 
-Built by [Think Clarity](https://ko-fi.com/thinkclarity) — designed and
+Built by [ApnaFilter](https://ko-fi.com/fpnafilter) — designed and
 developed with AI-assisted development (Claude Code). I made the product
 and architecture decisions, diagnosed and fixed bugs, and did the QA; the
 AI handled implementation.
@@ -79,7 +79,7 @@ hide the Quit button and disable that route.
 ## Support
 
 If this is useful to you, consider [supporting development on
-Ko-fi](https://ko-fi.com/thinkclarity).
+Ko-fi](https://ko-fi.com/apnafilter).
 
 ## License
 
